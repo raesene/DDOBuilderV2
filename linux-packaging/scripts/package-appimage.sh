@@ -117,9 +117,11 @@ export PATH="$APPDIR/wine/bin:$PATH"
 # Install dependencies with winetricks
 echo ""
 echo "Installing Wine dependencies (vcrun2019, msxml3)..."
+# Use --force to bypass sha256 checksum verification
+# (Microsoft updates packages without notifying winetricks maintainers)
 winetricks -q win10
-winetricks -q vcrun2019
-winetricks -q msxml3
+winetricks -q --force vcrun2019
+winetricks -q --force msxml3
 
 # Wait for winetricks to finish
 "$APPDIR/wine/bin/wineserver" --wait
