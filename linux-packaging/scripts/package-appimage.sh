@@ -70,28 +70,34 @@ mkdir -p "$BUILD_DIR" "$APPDIR"
 # Download Wine Staging
 echo ""
 echo "Downloading Wine Staging $WINE_VERSION..."
-WINE_TARBALL="wine-staging-$WINE_VERSION-x86_64.tar.xz"
+# Kron4ek Wine-Builds uses format: wine-X.Y-staging-amd64.tar.xz
+WINE_TARBALL="wine-$WINE_VERSION-staging-amd64.tar.xz"
 WINE_URL="https://github.com/Kron4ek/Wine-Builds/releases/download/$WINE_VERSION/$WINE_TARBALL"
 
 if [ ! -f "$BUILD_DIR/$WINE_TARBALL" ]; then
+    echo "Downloading from: $WINE_URL"
     wget -q --show-progress -O "$BUILD_DIR/$WINE_TARBALL" "$WINE_URL" || {
-        echo "Failed to download Wine. Trying alternative URL..."
-        # Alternative: WineHQ official builds
-        WINE_URL="https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/main/binary-amd64/wine-staging_${WINE_VERSION}~jammy-1_amd64.deb"
-        wget -q --show-progress -O "$BUILD_DIR/wine.deb" "$WINE_URL"
+        echo "Failed to download Wine from Kron4ek. Trying alternative..."
+        # Try wow64 variant (doesn't require 32-bit libs)
+        WINE_TARBALL="wine-$WINE_VERSION-staging-amd64-wow64.tar.xz"
+        WINE_URL="https://github.com/Kron4ek/Wine-Builds/releases/download/$WINE_VERSION/$WINE_TARBALL"
+        echo "Trying: $WINE_URL"
+        wget -q --show-progress -O "$BUILD_DIR/$WINE_TARBALL" "$WINE_URL" || {
+            echo "Error: Could not download Wine. Please check the version or URL."
+            exit 1
+        }
     }
 fi
 
 echo "Extracting Wine..."
-if [ -f "$BUILD_DIR/$WINE_TARBALL" ]; then
-    tar -xf "$BUILD_DIR/$WINE_TARBALL" -C "$BUILD_DIR"
-    mv "$BUILD_DIR/wine-staging-$WINE_VERSION-x86_64" "$APPDIR/wine"
-else
-    # Handle .deb extraction
-    mkdir -p "$BUILD_DIR/wine-deb"
-    dpkg-deb -x "$BUILD_DIR/wine.deb" "$BUILD_DIR/wine-deb"
-    mv "$BUILD_DIR/wine-deb/opt/wine-staging" "$APPDIR/wine"
+tar -xf "$BUILD_DIR/$WINE_TARBALL" -C "$BUILD_DIR"
+# The extracted directory is named wine-X.Y-staging-amd64 or similar
+WINE_EXTRACTED=$(find "$BUILD_DIR" -maxdepth 1 -type d -name "wine-*" | head -1)
+if [ -z "$WINE_EXTRACTED" ]; then
+    echo "Error: Could not find extracted Wine directory"
+    exit 1
 fi
+mv "$WINE_EXTRACTED" "$APPDIR/wine"
 
 # Create Wine prefix
 echo ""
