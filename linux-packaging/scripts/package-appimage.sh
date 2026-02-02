@@ -114,14 +114,20 @@ export PATH="$APPDIR/wine/bin:$PATH"
 # Wait for Wine to finish initialization
 "$APPDIR/wine/bin/wineserver" --wait
 
-# Install dependencies with winetricks
+# Update winetricks to get latest checksums (distro version is often outdated)
+echo ""
+echo "Updating winetricks..."
+WINETRICKS_LATEST=$(mktemp)
+wget -q -O "$WINETRICKS_LATEST" "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks"
+chmod +x "$WINETRICKS_LATEST"
+
+# Install dependencies with updated winetricks
 echo ""
 echo "Installing Wine dependencies (vcrun2019, msxml3)..."
-# Use --force to bypass sha256 checksum verification
-# (Microsoft updates packages without notifying winetricks maintainers)
-winetricks -q win10
-winetricks -q --force vcrun2019
-winetricks -q --force msxml3
+"$WINETRICKS_LATEST" -q win10
+"$WINETRICKS_LATEST" -q vcrun2019
+"$WINETRICKS_LATEST" -q msxml3
+rm -f "$WINETRICKS_LATEST"
 
 # Wait for winetricks to finish
 "$APPDIR/wine/bin/wineserver" --wait
