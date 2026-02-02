@@ -1,0 +1,23 @@
+#!/bin/bash
+# AppRun launcher for DDO Builder AppImage
+# This script sets up the Wine environment and launches the application
+
+HERE="$(dirname "$(readlink -f "${0}")")"
+
+# Wine environment configuration
+export WINEPREFIX="$HERE/prefix"
+export WINEARCH=win32
+export WINEDEBUG=-all
+export PATH="$HERE/wine/bin:$PATH"
+export LD_LIBRARY_PATH="$HERE/wine/lib:$HERE/lib:$LD_LIBRARY_PATH"
+
+# Disable Mono and Gecko installers (not needed)
+export WINEDLLOVERRIDES="mscoree=disabled;mshtml=disabled"
+
+# User data directory for saves and configuration
+USER_DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/ddo-builder"
+mkdir -p "$USER_DATA_DIR"
+
+# Change to application directory and launch
+cd "$WINEPREFIX/drive_c/DDOBuilder"
+exec "$HERE/wine/bin/wine" DDOBuilder.exe "$@"

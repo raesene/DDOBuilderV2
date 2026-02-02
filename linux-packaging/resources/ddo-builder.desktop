@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=DDO Builder
+Comment=Character builder for Dungeons & Dragons Online
+Exec=DDOBuilder
+Icon=ddo-builder
+Categories=Game;Utility;
+Terminal=false
+StartupWMClass=DDOBuilder.exe
